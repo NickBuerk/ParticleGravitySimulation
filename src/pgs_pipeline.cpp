@@ -11,7 +11,7 @@
 namespace pgs
 {
 
-pgsPipeline::pgsPipeline(PgsDevice &device,
+PgsPipeline::PgsPipeline(PgsDevice &device,
 						 const std::string &vertFilepath,
 						 const std::string &fragFilepath,
 						 const PipelineConfigInfo &configInfo)
@@ -20,14 +20,14 @@ pgsPipeline::pgsPipeline(PgsDevice &device,
 	createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 }
 
-pgsPipeline::~pgsPipeline()
+PgsPipeline::~PgsPipeline()
 {
 	vkDestroyShaderModule(pgsDevice.device(), vertShaderModule, nullptr);
 	vkDestroyShaderModule(pgsDevice.device(), fragShaderModule, nullptr);
 	vkDestroyPipeline(pgsDevice.device(), graphicsPipeline, nullptr);
 }
 
-std::vector<char> pgsPipeline::readFile(const std::string &filepath)
+std::vector<char> PgsPipeline::readFile(const std::string &filepath)
 {
 	std::ifstream file{filepath, std::ios::ate | std::ios::binary};
 
@@ -46,7 +46,7 @@ std::vector<char> pgsPipeline::readFile(const std::string &filepath)
 	return buffer;
 }
 
-void pgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
+void PgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
 										 const std::string &fragFilepath,
 										 const PipelineConfigInfo &configInfo)
 {
@@ -79,8 +79,8 @@ void pgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
 	shaderStages[1].pNext = nullptr;
 	shaderStages[1].pSpecializationInfo = nullptr;
 
-	auto bindingDescriptions = pgsModel::Particle::getBindingDescriptions();
-	auto attributeDescriptions = pgsModel::Particle::getAttributeDescriptions();
+	auto bindingDescriptions = PgsModel::Particle::getBindingDescriptions();
+	auto attributeDescriptions = PgsModel::Particle::getAttributeDescriptions();
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexAttributeDescriptionCount =
@@ -121,7 +121,7 @@ void pgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
 	}
 }
 
-void pgsPipeline::createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule)
+void PgsPipeline::createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -134,12 +134,12 @@ void pgsPipeline::createShaderModule(const std::vector<char> &code, VkShaderModu
 	}
 }
 
-void pgsPipeline::bind(VkCommandBuffer commandBuffer)
+void PgsPipeline::bind(VkCommandBuffer commandBuffer)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 }
 
-void pgsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo)
+void PgsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo)
 {
 	configInfo.inputAssemblyInfo.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

@@ -9,7 +9,7 @@ namespace pgs
 
 // *************** Descriptor Set Layout Builder *********************
 
-pgsDescriptorSetLayout::Builder &pgsDescriptorSetLayout::Builder::addBinding(
+PgsDescriptorSetLayout::Builder &PgsDescriptorSetLayout::Builder::addBinding(
 	uint32_t binding,
 	VkDescriptorType descriptorType,
 	VkShaderStageFlags stageFlags,
@@ -25,14 +25,14 @@ pgsDescriptorSetLayout::Builder &pgsDescriptorSetLayout::Builder::addBinding(
 	return *this;
 }
 
-std::unique_ptr<pgsDescriptorSetLayout> pgsDescriptorSetLayout::Builder::build() const
+std::unique_ptr<PgsDescriptorSetLayout> PgsDescriptorSetLayout::Builder::build() const
 {
-	return std::make_unique<pgsDescriptorSetLayout>(m_pgsDevice, bindings);
+	return std::make_unique<PgsDescriptorSetLayout>(m_pgsDevice, bindings);
 }
 
 // *************** Descriptor Set Layout *********************
 
-pgsDescriptorSetLayout::pgsDescriptorSetLayout(
+PgsDescriptorSetLayout::PgsDescriptorSetLayout(
 	PgsDevice &pgsDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
 	: m_pgsDevice{pgsDevice}, bindings{bindings}
 {
@@ -56,40 +56,40 @@ pgsDescriptorSetLayout::pgsDescriptorSetLayout(
 	}
 }
 
-pgsDescriptorSetLayout::~pgsDescriptorSetLayout()
+PgsDescriptorSetLayout::~PgsDescriptorSetLayout()
 {
 	vkDestroyDescriptorSetLayout(m_pgsDevice.device(), descriptorSetLayout, nullptr);
 }
 
 // *************** Descriptor Pool Builder *********************
 
-pgsDescriptorPool::Builder &pgsDescriptorPool::Builder::addPoolSize(VkDescriptorType descriptorType,
+PgsDescriptorPool::Builder &PgsDescriptorPool::Builder::addPoolSize(VkDescriptorType descriptorType,
 																	uint32_t count)
 {
 	poolSizes.push_back({descriptorType, count});
 	return *this;
 }
 
-pgsDescriptorPool::Builder &pgsDescriptorPool::Builder::setPoolFlags(
+PgsDescriptorPool::Builder &PgsDescriptorPool::Builder::setPoolFlags(
 	VkDescriptorPoolCreateFlags flags)
 {
 	poolFlags = flags;
 	return *this;
 }
-pgsDescriptorPool::Builder &pgsDescriptorPool::Builder::setMaxSets(uint32_t count)
+PgsDescriptorPool::Builder &PgsDescriptorPool::Builder::setMaxSets(uint32_t count)
 {
 	maxSets = count;
 	return *this;
 }
 
-std::unique_ptr<pgsDescriptorPool> pgsDescriptorPool::Builder::build() const
+std::unique_ptr<PgsDescriptorPool> PgsDescriptorPool::Builder::build() const
 {
-	return std::make_unique<pgsDescriptorPool>(m_pgsDevice, maxSets, poolFlags, poolSizes);
+	return std::make_unique<PgsDescriptorPool>(m_pgsDevice, maxSets, poolFlags, poolSizes);
 }
 
 // *************** Descriptor Pool *********************
 
-pgsDescriptorPool::pgsDescriptorPool(PgsDevice &pgsDevice,
+PgsDescriptorPool::PgsDescriptorPool(PgsDevice &pgsDevice,
 									 uint32_t maxSets,
 									 VkDescriptorPoolCreateFlags poolFlags,
 									 const std::vector<VkDescriptorPoolSize> &poolSizes)
@@ -111,12 +111,12 @@ pgsDescriptorPool::pgsDescriptorPool(PgsDevice &pgsDevice,
 	}
 }
 
-pgsDescriptorPool::~pgsDescriptorPool()
+PgsDescriptorPool::~PgsDescriptorPool()
 {
 	vkDestroyDescriptorPool(m_pgsDevice.device(), descriptorPool, nullptr);
 }
 
-bool pgsDescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout,
+bool PgsDescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout,
 										   VkDescriptorSet &descriptor) const
 {
 	VkDescriptorSetAllocateInfo allocInfo{};
@@ -135,7 +135,7 @@ bool pgsDescriptorPool::allocateDescriptor(const VkDescriptorSetLayout descripto
 	return true;
 }
 
-void pgsDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const
+void PgsDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const
 {
 	vkFreeDescriptorSets(m_pgsDevice.device(),
 						 descriptorPool,
@@ -143,19 +143,19 @@ void pgsDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptor
 						 descriptors.data());
 }
 
-void pgsDescriptorPool::resetPool()
+void PgsDescriptorPool::resetPool()
 {
 	vkResetDescriptorPool(m_pgsDevice.device(), descriptorPool, 0);
 }
 
 // *************** Descriptor Writer *********************
 
-pgsDescriptorWriter::pgsDescriptorWriter(pgsDescriptorSetLayout &setLayout, pgsDescriptorPool &pool)
+PgsDescriptorWriter::PgsDescriptorWriter(PgsDescriptorSetLayout &setLayout, PgsDescriptorPool &pool)
 	: setLayout{setLayout}, pool{pool}
 {
 }
 
-pgsDescriptorWriter &pgsDescriptorWriter::writeBuffer(uint32_t binding,
+PgsDescriptorWriter &PgsDescriptorWriter::writeBuffer(uint32_t binding,
 													  VkDescriptorBufferInfo *bufferInfo)
 {
 	assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
@@ -176,7 +176,7 @@ pgsDescriptorWriter &pgsDescriptorWriter::writeBuffer(uint32_t binding,
 	return *this;
 }
 
-pgsDescriptorWriter &pgsDescriptorWriter::writeImage(uint32_t binding,
+PgsDescriptorWriter &PgsDescriptorWriter::writeImage(uint32_t binding,
 													 VkDescriptorImageInfo *imageInfo)
 {
 	assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
@@ -197,7 +197,7 @@ pgsDescriptorWriter &pgsDescriptorWriter::writeImage(uint32_t binding,
 	return *this;
 }
 
-bool pgsDescriptorWriter::build(VkDescriptorSet &set)
+bool PgsDescriptorWriter::build(VkDescriptorSet &set)
 {
 	bool success = pool.allocateDescriptor(setLayout.getDescriptorSetLayout(), set);
 	if (!success)
@@ -208,7 +208,7 @@ bool pgsDescriptorWriter::build(VkDescriptorSet &set)
 	return true;
 }
 
-void pgsDescriptorWriter::overwrite(VkDescriptorSet &set)
+void PgsDescriptorWriter::overwrite(VkDescriptorSet &set)
 {
 	for (auto &write : writes)
 	{

@@ -44,10 +44,10 @@ namespace pgs
         assert(m_graphicsPipelineLayout != nullptr && "Cannot create graphics pipeline before graphics pipeline layout");
 
         PipelineConfigInfo pipelineConfig{};
-        pgsPipeline::defaultPipelineConfigInfo(pipelineConfig);
+        PgsPipeline::defaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_graphicsPipelineLayout;
-        m_graphicsPipeline = std::make_unique<pgsPipeline>(
+        m_graphicsPipeline = std::make_unique<PgsPipeline>(
             m_Device,
             "shaders/particle.vert.spv",
             "shaders/particle.frag.spv",

@@ -11,14 +11,14 @@
 
 namespace pgs
 {
-class pgsRenderer
+class PgsRenderer
 {
   public:
-	pgsRenderer(PgsWindow &window, PgsDevice &device);
-	~pgsRenderer();
+	PgsRenderer(PgsWindow &window, PgsDevice &device);
+	~PgsRenderer();
 
-	pgsRenderer(const pgsRenderer &) = delete;
-	pgsRenderer &operator=(const pgsRenderer &) = delete;
+	PgsRenderer(const PgsRenderer &) = delete;
+	PgsRenderer &operator=(const PgsRenderer &) = delete;
 
 	VkRenderPass getSwapChainRenderPass() const
 	{

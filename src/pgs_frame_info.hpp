@@ -14,7 +14,7 @@ struct FrameInfo
 	int frameIndex;
 	float frameTime;
 	VkCommandBuffer commandBuffer;
-	std::shared_ptr<pgsModel> model;
+	std::shared_ptr<PgsModel> model;
 	VkDescriptorSet globalDescriptorSet;
 };
 } // namespace pgs

@@ -30,7 +30,7 @@ class ParticleSystem {
 
   PgsDevice &m_Device;
 
-  std::unique_ptr<pgsPipeline> m_graphicsPipeline;
+  std::unique_ptr<PgsPipeline> m_graphicsPipeline;
   VkPipelineLayout m_graphicsPipelineLayout;
   //std::unique_ptr<pgsComputePipeline> m_computePipeline;
   //VkPipelineLayout m_computePipelineLayout;

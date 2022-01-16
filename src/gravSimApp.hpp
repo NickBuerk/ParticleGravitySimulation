@@ -30,9 +30,9 @@ class GravSimApp
 
 	PgsWindow pgsWindow{WIDTH, HEIGHT, "Particle Gravity Simulation"};
 	PgsDevice pgsDevice{pgsWindow};
-	pgsRenderer pgsRenderer{pgsWindow, pgsDevice};
+	PgsRenderer pgsRenderer{pgsWindow, pgsDevice};
 
 	// note: order of declarations matters
-	std::unique_ptr<pgsDescriptorPool> globalPool{};
+	std::unique_ptr<PgsDescriptorPool> globalPool{};
 };
 } // namespace pgs

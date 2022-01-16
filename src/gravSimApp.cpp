@@ -27,7 +27,7 @@ struct GlobalUbo
 GravSimApp::GravSimApp()
 {
 	globalPool =
-		pgsDescriptorPool::Builder(pgsDevice)
+		PgsDescriptorPool::Builder(pgsDevice)
 			.setMaxSets(PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.build();
@@ -51,7 +51,7 @@ void GravSimApp::run()
 	}
 
 	auto globalSetLayout =
-		pgsDescriptorSetLayout::Builder(pgsDevice)
+		PgsDescriptorSetLayout::Builder(pgsDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 			.build();
 
@@ -59,7 +59,7 @@ void GravSimApp::run()
 	for (int i = 0; i < globalDescriptorSets.size(); i++)
 	{
 		auto bufferInfo = uboBuffers[i]->descriptorInfo();
-		pgsDescriptorWriter(*globalSetLayout, *globalPool)
+		PgsDescriptorWriter(*globalSetLayout, *globalPool)
 			.writeBuffer(0, &bufferInfo)
 			.build(globalDescriptorSets[i]);
 	}
@@ -68,7 +68,7 @@ void GravSimApp::run()
 								  pgsRenderer.getSwapChainRenderPass(),
 								  globalSetLayout->getDescriptorSetLayout()};
 
-	std::shared_ptr<pgsModel> pgsModel = pgsModel::createModel(pgsDevice);
+	std::shared_ptr<PgsModel> pgsModel = PgsModel::createModel(pgsDevice);
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	while (!pgsWindow.shouldClose())

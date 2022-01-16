@@ -28,17 +28,17 @@ struct PipelineConfigInfo
 	uint32_t subpass = 0;
 };
 
-class pgsPipeline
+class PgsPipeline
 {
   public:
-	pgsPipeline(PgsDevice &device,
+	PgsPipeline(PgsDevice &device,
 				const std::string &vertFilepath,
 				const std::string &fragFilepath,
 				const PipelineConfigInfo &configInfo);
-	~pgsPipeline();
+	~PgsPipeline();
 
-	pgsPipeline(const pgsPipeline &) = delete;
-	pgsPipeline &operator=(const pgsPipeline &) = delete;
+	PgsPipeline(const PgsPipeline &) = delete;
+	PgsPipeline &operator=(const PgsPipeline &) = delete;
 
 	void bind(VkCommandBuffer commandBuffer);
 

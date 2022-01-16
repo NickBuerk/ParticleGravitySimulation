@@ -10,16 +10,16 @@
 namespace pgs
 {
 
-pgsModel::pgsModel(PgsDevice &device, const std::vector<Particle> &particles) : pgsDevice{device}
+PgsModel::PgsModel(PgsDevice &device, const std::vector<Particle> &particles) : pgsDevice{device}
 {
 	createVertexBuffers(particles);
 }
 
-pgsModel::~pgsModel()
+PgsModel::~PgsModel()
 {
 }
 
-std::unique_ptr<pgsModel> pgsModel::createModel(PgsDevice &device)
+std::unique_ptr<PgsModel> PgsModel::createModel(PgsDevice &device)
 {
 	std::default_random_engine rndEngine((unsigned)time(nullptr));
 	std::uniform_real_distribution<float> rndDistribution(-1.0f, 1.0f);
@@ -31,10 +31,10 @@ std::unique_ptr<pgsModel> pgsModel::createModel(PgsDevice &device)
 		particle.velocity = glm::vec2{0.f, 0.f};
 	}
 
-	return std::make_unique<pgsModel>(device, particles);
+	return std::make_unique<PgsModel>(device, particles);
 }
 
-void pgsModel::createVertexBuffers(const std::vector<Particle> &particles)
+void PgsModel::createVertexBuffers(const std::vector<Particle> &particles)
 {
 	vertexCount = static_cast<uint32_t>(particles.size());
 	VkDeviceSize bufferSize = sizeof(particles[0]) * vertexCount;
@@ -61,19 +61,19 @@ void pgsModel::createVertexBuffers(const std::vector<Particle> &particles)
 	pgsDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 }
 
-void pgsModel::bind(VkCommandBuffer commandBuffer)
+void PgsModel::bind(VkCommandBuffer commandBuffer)
 {
 	VkBuffer buffers[] = {vertexBuffer->getBuffer()};
 	VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 }
 
-void pgsModel::draw(VkCommandBuffer commandBuffer)
+void PgsModel::draw(VkCommandBuffer commandBuffer)
 {
 	vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
 }
 
-std::vector<VkVertexInputBindingDescription> pgsModel::Particle::getBindingDescriptions()
+std::vector<VkVertexInputBindingDescription> PgsModel::Particle::getBindingDescriptions()
 {
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
 	bindingDescriptions[0].binding = 0;
@@ -82,7 +82,7 @@ std::vector<VkVertexInputBindingDescription> pgsModel::Particle::getBindingDescr
 	return bindingDescriptions;
 }
 
-std::vector<VkVertexInputAttributeDescription> pgsModel::Particle::getAttributeDescriptions()
+std::vector<VkVertexInputAttributeDescription> PgsModel::Particle::getAttributeDescriptions()
 {
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 

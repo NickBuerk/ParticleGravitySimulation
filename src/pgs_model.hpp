@@ -14,7 +14,7 @@
 
 namespace pgs
 {
-class pgsModel
+class PgsModel
 {
   public:
 	struct Particle
@@ -33,13 +33,13 @@ class pgsModel
 
 	static constexpr uint32_t PARTICLE_COUNT = 256 * 512;
 
-	pgsModel(PgsDevice &device, const std::vector<Particle> &particles);
-	~pgsModel();
+	PgsModel(PgsDevice &device, const std::vector<Particle> &particles);
+	~PgsModel();
 
-	pgsModel(const pgsModel &) = delete;
-	pgsModel &operator=(const pgsModel &) = delete;
+	PgsModel(const PgsModel &) = delete;
+	PgsModel &operator=(const PgsModel &) = delete;
 
-	static std::unique_ptr<pgsModel> createModel(PgsDevice &device);
+	static std::unique_ptr<PgsModel> createModel(PgsDevice &device);
 
 	void bind(VkCommandBuffer commandBuffer);
 	void draw(VkCommandBuffer commandBuffer);

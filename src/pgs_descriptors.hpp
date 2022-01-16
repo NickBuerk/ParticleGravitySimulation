@@ -10,7 +10,7 @@
 namespace pgs
 {
 
-class pgsDescriptorSetLayout
+class PgsDescriptorSetLayout
 {
   public:
 	class Builder
@@ -24,18 +24,18 @@ class pgsDescriptorSetLayout
 							VkDescriptorType descriptorType,
 							VkShaderStageFlags stageFlags,
 							uint32_t count = 1);
-		std::unique_ptr<pgsDescriptorSetLayout> build() const;
+		std::unique_ptr<PgsDescriptorSetLayout> build() const;
 
 	  private:
 		PgsDevice &m_pgsDevice;
 		std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings{};
 	};
 
-	pgsDescriptorSetLayout(PgsDevice &pgsDevice,
+	PgsDescriptorSetLayout(PgsDevice &pgsDevice,
 						   std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
-	~pgsDescriptorSetLayout();
-	pgsDescriptorSetLayout(const pgsDescriptorSetLayout &) = delete;
-	pgsDescriptorSetLayout &operator=(const pgsDescriptorSetLayout &) = delete;
+	~PgsDescriptorSetLayout();
+	PgsDescriptorSetLayout(const PgsDescriptorSetLayout &) = delete;
+	PgsDescriptorSetLayout &operator=(const PgsDescriptorSetLayout &) = delete;
 
 	VkDescriptorSetLayout getDescriptorSetLayout() const
 	{
@@ -47,10 +47,10 @@ class pgsDescriptorSetLayout
 	VkDescriptorSetLayout descriptorSetLayout;
 	std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings;
 
-	friend class pgsDescriptorWriter;
+	friend class PgsDescriptorWriter;
 };
 
-class pgsDescriptorPool
+class PgsDescriptorPool
 {
   public:
 	class Builder
@@ -63,7 +63,7 @@ class pgsDescriptorPool
 		Builder &addPoolSize(VkDescriptorType descriptorType, uint32_t count);
 		Builder &setPoolFlags(VkDescriptorPoolCreateFlags flags);
 		Builder &setMaxSets(uint32_t count);
-		std::unique_ptr<pgsDescriptorPool> build() const;
+		std::unique_ptr<PgsDescriptorPool> build() const;
 
 	  private:
 		PgsDevice &m_pgsDevice;
@@ -72,13 +72,13 @@ class pgsDescriptorPool
 		VkDescriptorPoolCreateFlags poolFlags = 0;
 	};
 
-	pgsDescriptorPool(PgsDevice &pgsDevice,
+	PgsDescriptorPool(PgsDevice &pgsDevice,
 					  uint32_t maxSets,
 					  VkDescriptorPoolCreateFlags poolFlags,
 					  const std::vector<VkDescriptorPoolSize> &poolSizes);
-	~pgsDescriptorPool();
-	pgsDescriptorPool(const pgsDescriptorPool &) = delete;
-	pgsDescriptorPool &operator=(const pgsDescriptorPool &) = delete;
+	~PgsDescriptorPool();
+	PgsDescriptorPool(const PgsDescriptorPool &) = delete;
+	PgsDescriptorPool &operator=(const PgsDescriptorPool &) = delete;
 
 	bool allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout,
 							VkDescriptorSet &descriptor) const;
@@ -91,23 +91,23 @@ class pgsDescriptorPool
 	PgsDevice &m_pgsDevice;
 	VkDescriptorPool descriptorPool;
 
-	friend class pgsDescriptorWriter;
+	friend class PgsDescriptorWriter;
 };
 
-class pgsDescriptorWriter
+class PgsDescriptorWriter
 {
   public:
-	pgsDescriptorWriter(pgsDescriptorSetLayout &setLayout, pgsDescriptorPool &pool);
+	PgsDescriptorWriter(PgsDescriptorSetLayout &setLayout, PgsDescriptorPool &pool);
 
-	pgsDescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
-	pgsDescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
+	PgsDescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
+	PgsDescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
 
 	bool build(VkDescriptorSet &set);
 	void overwrite(VkDescriptorSet &set);
 
   private:
-	pgsDescriptorSetLayout &setLayout;
-	pgsDescriptorPool &pool;
+	PgsDescriptorSetLayout &setLayout;
+	PgsDescriptorPool &pool;
 	std::vector<VkWriteDescriptorSet> writes;
 };
 

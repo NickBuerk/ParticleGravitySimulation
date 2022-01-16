@@ -9,19 +9,19 @@
 namespace pgs
 {
 
-pgsRenderer::pgsRenderer(PgsWindow &window, PgsDevice &device)
+PgsRenderer::PgsRenderer(PgsWindow &window, PgsDevice &device)
 	: m_pgsWindow{window}, pgsDevice{device}
 {
 	recreateSwapChain();
 	createCommandBuffers();
 }
 
-pgsRenderer::~pgsRenderer()
+PgsRenderer::~PgsRenderer()
 {
 	freeCommandBuffers();
 }
 
-void pgsRenderer::recreateSwapChain()
+void PgsRenderer::recreateSwapChain()
 {
 	auto extent = m_pgsWindow.getExtent();
 	while (extent.width == 0 || extent.height == 0)
@@ -47,7 +47,7 @@ void pgsRenderer::recreateSwapChain()
 	}
 }
 
-void pgsRenderer::createCommandBuffers()
+void PgsRenderer::createCommandBuffers()
 {
 	commandBuffers.resize(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
 
@@ -64,7 +64,7 @@ void pgsRenderer::createCommandBuffers()
 	}
 }
 
-void pgsRenderer::freeCommandBuffers()
+void PgsRenderer::freeCommandBuffers()
 {
 	vkFreeCommandBuffers(pgsDevice.device(),
 						 pgsDevice.getCommandPool(),
@@ -73,7 +73,7 @@ void pgsRenderer::freeCommandBuffers()
 	commandBuffers.clear();
 }
 
-VkCommandBuffer pgsRenderer::beginFrame()
+VkCommandBuffer PgsRenderer::beginFrame()
 {
 	assert(!isFrameStarted && "Can't call beginFrame while already in progress");
 
@@ -102,7 +102,7 @@ VkCommandBuffer pgsRenderer::beginFrame()
 	return commandBuffer;
 }
 
-void pgsRenderer::endFrame()
+void PgsRenderer::endFrame()
 {
 	assert(isFrameStarted && "Can't call endFrame while frame is not in progress");
 	auto commandBuffer = getCurrentCommandBuffer();
@@ -127,7 +127,7 @@ void pgsRenderer::endFrame()
 	currentFrameIndex = (currentFrameIndex + 1) % PgsSwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
-void pgsRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
+void PgsRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
 	assert(isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
 	assert(commandBuffer == getCurrentCommandBuffer() &&
@@ -161,7 +161,7 @@ void pgsRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void pgsRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
+void PgsRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
 	assert(isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
 	assert(commandBuffer == getCurrentCommandBuffer() &&
