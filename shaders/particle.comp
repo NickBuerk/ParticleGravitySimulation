@@ -1,0 +1,50 @@
+#version 450
+
+struct Particle
+{
+    vec2 pos;
+    vec2 vel;
+};
+
+layout(std140, binding = 0) buffer Pos
+{
+    Particle particles[];
+};
+
+layout (binding = 1) uniform UBO 
+{
+	float deltaT;
+	int particleCount;
+} ubo;
+
+// Local size of compute shader - number of invocations that will take place inside a work group
+layout(local_size_x = 256) in;
+
+vec2 computeGravity(vec2 pos)
+{
+    // TODO: compute gravity
+    return vec2(0.0001, 0.0001);
+}
+
+void main()
+{
+    // Current SSBO index
+    uint index = gl_GlobalInvocationID.x;
+    if (index >= ubo.particleCount)
+        return;
+
+    // Compute gravitational force
+    vec2 vVel = particles[index].vel.xy;
+    vec2 vPos = particles[index].pos.xy;
+    vec2 acceleration = computeGravity(vPos);
+
+    // update this particle's velocity
+    vVel += acceleration;
+    particles[index].vel.xy = vVel;
+
+    // update this particles position
+    vPos += vVel * ubo.deltaT;
+    particles[index].pos.xy = vPos;
+
+    // TODO: update color
+}

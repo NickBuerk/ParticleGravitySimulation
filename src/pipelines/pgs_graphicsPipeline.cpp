@@ -1,17 +1,16 @@
-#include "pgs_pipeline.hpp"
-
+#include "pgs_graphicsPipeline.hpp"
+#include "../pgs_utils.hpp"
 #include "pgs_model.hpp"
 
 // std
 #include <cassert>
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
 namespace pgs
 {
 
-PgsPipeline::PgsPipeline(PgsDevice &device,
+PgsGraphicsPipeline::PgsGraphicsPipeline(PgsDevice &device,
 						 const std::string &vertFilepath,
 						 const std::string &fragFilepath,
 						 const PipelineConfigInfo &configInfo)
@@ -20,33 +19,14 @@ PgsPipeline::PgsPipeline(PgsDevice &device,
 	createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 }
 
-PgsPipeline::~PgsPipeline()
+PgsGraphicsPipeline::~PgsGraphicsPipeline()
 {
 	vkDestroyShaderModule(pgsDevice.device(), vertShaderModule, nullptr);
 	vkDestroyShaderModule(pgsDevice.device(), fragShaderModule, nullptr);
 	vkDestroyPipeline(pgsDevice.device(), graphicsPipeline, nullptr);
 }
 
-std::vector<char> PgsPipeline::readFile(const std::string &filepath)
-{
-	std::ifstream file{filepath, std::ios::ate | std::ios::binary};
-
-	if (!file.is_open())
-	{
-		throw std::runtime_error("failed to open file: " + filepath);
-	}
-
-	size_t fileSize = static_cast<size_t>(file.tellg());
-	std::vector<char> buffer(fileSize);
-
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
-
-	file.close();
-	return buffer;
-}
-
-void PgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
+void PgsGraphicsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
 										 const std::string &fragFilepath,
 										 const PipelineConfigInfo &configInfo)
 {
@@ -57,8 +37,8 @@ void PgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
 		   "Cannot create graphics pipeline: no renderPass provided in "
 		   "configInfo");
 
-	auto vertCode = readFile(vertFilepath);
-	auto fragCode = readFile(fragFilepath);
+	auto vertCode = readShaderFile(vertFilepath);
+	auto fragCode = readShaderFile(fragFilepath);
 
 	createShaderModule(vertCode, &vertShaderModule);
 	createShaderModule(fragCode, &fragShaderModule);
@@ -121,7 +101,7 @@ void PgsPipeline::createGraphicsPipeline(const std::string &vertFilepath,
 	}
 }
 
-void PgsPipeline::createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule)
+void PgsGraphicsPipeline::createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -134,12 +114,12 @@ void PgsPipeline::createShaderModule(const std::vector<char> &code, VkShaderModu
 	}
 }
 
-void PgsPipeline::bind(VkCommandBuffer commandBuffer)
+void PgsGraphicsPipeline::bind(VkCommandBuffer commandBuffer)
 {
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 }
 
-void PgsPipeline::defaultPipelineConfigInfo(PipelineConfigInfo &configInfo)
+void PgsGraphicsPipeline::graphicsPipelineConfigInfo(PipelineConfigInfo &configInfo)
 {
 	configInfo.inputAssemblyInfo.sType =
 		VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

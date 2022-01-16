@@ -2,7 +2,8 @@
 
 #include "../pgs_device.hpp"
 #include "../pgs_frame_info.hpp"
-#include "pgs_pipeline.hpp"
+#include "../pipelines/pgs_graphicsPipeline.hpp"
+#include "../pipelines/pgs_computePipeline.hpp"
 //#include "pgs_computePipeline.hpp"
 #include "pgs_buffer.hpp"
 
@@ -28,11 +29,11 @@ class ParticleSystem {
   void createComputePipelineLayout(VkDescriptorSetLayout globalSetLayout);
   void createComputePipeline();
 
-  PgsDevice &m_Device;
+  PgsDevice &m_pgsDevice;
 
-  std::unique_ptr<PgsPipeline> m_graphicsPipeline;
+  std::unique_ptr<PgsGraphicsPipeline> m_graphicsPipeline;
   VkPipelineLayout m_graphicsPipelineLayout;
-  //std::unique_ptr<pgsComputePipeline> m_computePipeline;
-  //VkPipelineLayout m_computePipelineLayout;
+  std::unique_ptr<PgsComputePipeline> m_computePipeline;
+  VkPipelineLayout m_computePipelineLayout;
 };
 }  // namespace pgs

@@ -28,25 +28,23 @@ struct PipelineConfigInfo
 	uint32_t subpass = 0;
 };
 
-class PgsPipeline
+class PgsGraphicsPipeline
 {
   public:
-	PgsPipeline(PgsDevice &device,
+	PgsGraphicsPipeline(PgsDevice &device,
 				const std::string &vertFilepath,
 				const std::string &fragFilepath,
 				const PipelineConfigInfo &configInfo);
-	~PgsPipeline();
+	~PgsGraphicsPipeline();
 
-	PgsPipeline(const PgsPipeline &) = delete;
-	PgsPipeline &operator=(const PgsPipeline &) = delete;
+	PgsGraphicsPipeline(const PgsGraphicsPipeline &) = delete;
+	PgsGraphicsPipeline &operator=(const PgsGraphicsPipeline &) = delete;
 
 	void bind(VkCommandBuffer commandBuffer);
 
-	static void defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
+	static void graphicsPipelineConfigInfo(PipelineConfigInfo &configInfo);
 
   private:
-	static std::vector<char> readFile(const std::string &filepath);
-
 	void createGraphicsPipeline(const std::string &vertFilepath,
 								const std::string &fragFilepath,
 								const PipelineConfigInfo &configInfo);

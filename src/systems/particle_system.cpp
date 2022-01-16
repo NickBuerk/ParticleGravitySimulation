@@ -12,7 +12,7 @@
 
 namespace pgs
 {
-    ParticleSystem::ParticleSystem(PgsDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : m_Device{device}
+    ParticleSystem::ParticleSystem(PgsDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : m_pgsDevice{device}
     {
         createGraphicsPipelineLayout();
         createGraphicsPipeline(renderPass);
@@ -22,7 +22,7 @@ namespace pgs
 
     ParticleSystem::~ParticleSystem()
     {
-        vkDestroyPipelineLayout(m_Device.device(), m_graphicsPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(m_pgsDevice.device(), m_graphicsPipelineLayout, nullptr);
         //vkDestroyPipelineLayout(m_Device.device(), m_computePipelineLayout, nullptr);
     }
 
@@ -34,7 +34,7 @@ namespace pgs
         pipelineLayoutInfo.pSetLayouts = nullptr;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pPushConstantRanges = nullptr;
-        if (vkCreatePipelineLayout(m_Device.device(), &pipelineLayoutInfo, nullptr, &m_graphicsPipelineLayout) !=
+        if (vkCreatePipelineLayout(m_pgsDevice.device(), &pipelineLayoutInfo, nullptr, &m_graphicsPipelineLayout) !=
             VK_SUCCESS) {
             throw std::runtime_error("failed to create graphics pipeline layout!");
         }
@@ -44,56 +44,43 @@ namespace pgs
         assert(m_graphicsPipelineLayout != nullptr && "Cannot create graphics pipeline before graphics pipeline layout");
 
         PipelineConfigInfo pipelineConfig{};
-        PgsPipeline::defaultPipelineConfigInfo(pipelineConfig);
+        PgsGraphicsPipeline::graphicsPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = m_graphicsPipelineLayout;
-        m_graphicsPipeline = std::make_unique<PgsPipeline>(
-            m_Device,
+        m_graphicsPipeline = std::make_unique<PgsGraphicsPipeline>(
+            m_pgsDevice,
             "shaders/particle.vert.spv",
             "shaders/particle.frag.spv",
             pipelineConfig);
     }
 
-    // void ParticleSystem::createComputePipelineLayout(/*VkDescriptorSetLayout globalSetLayout*/)
-    // {
-    //     // std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+    void ParticleSystem::createComputePipelineLayout(VkDescriptorSetLayout globalSetLayout)
+    {
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
 
-    //     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    //     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    //     pipelineLayoutInfo.setLayoutCount = 0; //static_cast<uint32_t>(descriptorSetLayouts.size());
-    //     pipelineLayoutInfo.pSetLayouts = nullptr; //descriptorSetLayouts.data();
-    //     pipelineLayoutInfo.pushConstantRangeCount = 0;
-    //     pipelineLayoutInfo.pPushConstantRanges = nullptr;
-    //     if (vkCreatePipelineLayout(m_Device.device(), &pipelineLayoutInfo, nullptr, &m_computePipelineLayout) !=
-    //         VK_SUCCESS) {
-    //         throw std::runtime_error("failed to create compute pipeline layout!");
-    //     }
-    // }
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+        if (vkCreatePipelineLayout(m_pgsDevice.device(), &pipelineLayoutInfo, nullptr, &m_computePipelineLayout) !=
+            VK_SUCCESS) {
+            throw std::runtime_error("failed to create compute pipeline layout!");
+        }
+    }
 
-    // void ParticleSystem::createComputePipeline() {
-    //     assert(m_computePipelineLayout != nullptr && "Cannot create compute pipeline before compute pipeline layout");
+    void ParticleSystem::createComputePipeline() {
+        assert(m_computePipelineLayout != nullptr && "Cannot create compute pipeline before compute pipeline layout");
 
-    //     ComputePipelineConfigInfo pipelineConfig{};
-    //     pgsComputePipeline::particlePipelineConfigInfo(pipelineConfig);
-    //     pipelineConfig.pipelineLayout = m_computePipelineLayout;
-    //     m_computePipeline = std::make_unique<pgsComputePipeline>(
-    //         m_Device,
-    //         "shaders/particle.comp.spv",
-    //         pipelineConfig);
-    // }
+        m_computePipeline = std::make_unique<PgsComputePipeline>(
+            m_pgsDevice,
+            "shaders/particle.comp.spv",
+            m_computePipelineLayout);
+    }
 
     void ParticleSystem::renderParticles(FrameInfo& frameInfo) {
 
-        // Wait for previous vertex shader invocations to complete.
-        //VkMemoryBarrier;
-
         // bind compute pipeline
         //m_computePipeline->bind(frameInfo.commandBuffer);
-
-        // bind the descriptor set
-
-        // dispatch compute job
-        //vkCmdDispatch(frameInfo.commandBuffer, );
 
         /*vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
@@ -105,7 +92,10 @@ namespace pgs
             0,
             nullptr);*/
 
-        // render the model
+        // dispatch compute job
+        //vkCmdDispatch(frameInfo.commandBuffer, );
+
+        // dispatch graphics jobs
         m_graphicsPipeline->bind(frameInfo.commandBuffer);
         frameInfo.model->bind(frameInfo.commandBuffer);
         frameInfo.model->draw(frameInfo.commandBuffer);
