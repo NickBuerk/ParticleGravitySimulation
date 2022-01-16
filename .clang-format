@@ -1,0 +1,9 @@
+{
+BasedOnStyle:
+	Microsoft, TabWidth : 4, IndentWidth : 4,
+		UseTab : Always,
+				 ColumnLimit : 100,
+				 AllowAllArgumentsOnNextLine : false,
+											   BinPackParameters : false,
+																   BinPackArguments : false,
+}
