@@ -6,9 +6,9 @@ struct Particle
     vec2 vel;
 };
 
-layout(std140, binding = 0) buffer Pos
+layout(std140, binding = 0) buffer Particles
 {
-    Particle particles[];
+    Particle particles[ ];
 };
 
 layout (binding = 1) uniform UBO 
@@ -17,13 +17,24 @@ layout (binding = 1) uniform UBO
 	int particleCount;
 } ubo;
 
+const float GRAV_CONSTANT = 0.0000035;
+
 // Local size of compute shader - number of invocations that will take place inside a work group
 layout(local_size_x = 256) in;
 
 vec2 computeGravity(vec2 pos)
 {
     // TODO: compute gravity
-    return vec2(0.000001, 0.000001);
+    vec2 forceSum = vec2(0.0, 0.0);
+    const float damp = 0.001;
+    for (uint i = 0; i < ubo.particleCount; i++)
+    {
+        vec2 delta = particles[i].pos - pos;
+        float dampedDot = pow(dot(delta, delta) + damp, 1.5);
+        forceSum += (delta / dampedDot) * GRAV_CONSTANT;
+    }
+
+    return forceSum;
 }
 
 void main()
@@ -39,12 +50,14 @@ void main()
     vec2 acceleration = computeGravity(vPos);
 
     // update this particle's velocity
-    vVel += acceleration;
-    particles[index].vel.xy = vVel;
+    vVel += (acceleration * ubo.frameTime);
 
     // update this particles position
-    vPos += vVel * ubo.frameTime;
+    vPos += (vVel * ubo.frameTime);
+
+    // write back
     particles[index].pos.xy = vPos;
+    particles[index].vel.xy = vVel;
 
     // TODO: update color
 }

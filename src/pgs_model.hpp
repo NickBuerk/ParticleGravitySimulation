@@ -31,7 +31,7 @@ class PgsModel
 		}
 	};
 
-	static constexpr uint32_t PARTICLE_COUNT = 256 * 512;
+	static constexpr uint32_t PARTICLE_COUNT = 256 * 256;
 
 	PgsModel(PgsDevice &device, const std::vector<Particle> &particles);
 	~PgsModel();

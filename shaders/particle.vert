@@ -5,6 +5,12 @@ layout(location = 1) in vec2 velocity;
 
 layout(location = 0) out vec3 fragColor;
 
+out gl_PerVertex
+{
+  vec4 gl_Position;
+  float gl_PointSize;
+};
+
 void main() {
   gl_PointSize = 1.0;
   fragColor = vec3(1.0, 1.0, 1.0);

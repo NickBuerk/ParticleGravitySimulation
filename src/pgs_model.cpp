@@ -23,12 +23,16 @@ std::unique_ptr<PgsModel> PgsModel::createModel(PgsDevice &device)
 {
 	std::default_random_engine rndEngine((unsigned)time(nullptr));
 	std::uniform_real_distribution<float> rndDistribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> velDistribution(-0.1f, 0.1f);
 
 	std::vector<Particle> particles(PARTICLE_COUNT);
 	for (auto &particle : particles)
 	{
 		particle.position = glm::vec2(rndDistribution(rndEngine), rndDistribution(rndEngine));
-		particle.velocity = glm::vec2{0.f, 0.f};
+		float distanceToCenter = glm::dot(particle.position, particle.position);
+		glm::vec2 directionPerpendicularToCenterLine =
+			glm::vec2(-particle.position.y, particle.position.x);
+		particle.velocity = distanceToCenter * directionPerpendicularToCenterLine;
 	}
 
 	return std::make_unique<PgsModel>(device, particles);

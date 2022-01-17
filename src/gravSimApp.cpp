@@ -13,6 +13,7 @@
 #include <array>
 #include <cassert>
 #include <chrono>
+#include <iostream>
 #include <stdexcept>
 
 namespace pgs
@@ -85,6 +86,7 @@ void GravSimApp::run()
 			std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime)
 				.count();
 		currentTime = newTime;
+		// std::cout << "Frame time: " << frameTime << "\n";
 
 		if (auto commandBuffer = pgsRenderer.beginFrame())
 		{
