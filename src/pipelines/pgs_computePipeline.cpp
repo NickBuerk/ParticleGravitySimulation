@@ -72,7 +72,12 @@ void PgsComputePipeline::createShaderModule(const std::vector<char> &code, VkSha
 
 void PgsComputePipeline::bind(VkCommandBuffer commandBuffer)
 {
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_computePipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_computePipeline);
+}
+
+void PgsComputePipeline::compute(VkCommandBuffer commandBuffer)
+{
+	vkCmdDispatch(commandBuffer, PgsModel::PARTICLE_COUNT / 256, 1, 1);
 }
 
 } // namespace pgs

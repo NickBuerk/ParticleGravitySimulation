@@ -21,6 +21,7 @@ class PgsComputePipeline
 	PgsComputePipeline &operator=(const PgsComputePipeline &) = delete;
 
 	void bind(VkCommandBuffer commandBuffer);
+	void compute(VkCommandBuffer commandBuffer);
 
   private:
 	void createComputePipeline(const std::string &compFilepath,

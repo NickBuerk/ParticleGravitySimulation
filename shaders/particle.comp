@@ -13,7 +13,7 @@ layout(std140, binding = 0) buffer Pos
 
 layout (binding = 1) uniform UBO 
 {
-	float deltaT;
+	float frameTime;
 	int particleCount;
 } ubo;
 
@@ -23,7 +23,7 @@ layout(local_size_x = 256) in;
 vec2 computeGravity(vec2 pos)
 {
     // TODO: compute gravity
-    return vec2(0.0001, 0.0001);
+    return vec2(0.000001, 0.000001);
 }
 
 void main()
@@ -43,7 +43,7 @@ void main()
     particles[index].vel.xy = vVel;
 
     // update this particles position
-    vPos += vVel * ubo.deltaT;
+    vPos += vVel * ubo.frameTime;
     particles[index].pos.xy = vPos;
 
     // TODO: update color

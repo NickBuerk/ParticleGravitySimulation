@@ -9,6 +9,7 @@
 // std
 #include <stdexcept>
 #include <cassert>
+#include <iostream>
 
 namespace pgs
 {
@@ -16,14 +17,14 @@ namespace pgs
     {
         createGraphicsPipelineLayout();
         createGraphicsPipeline(renderPass);
-        //createComputePipelineLayout(/*globalSetLayout*/);
-        //createComputePipeline();
+        createComputePipelineLayout(globalSetLayout);
+        createComputePipeline();
     }
 
     ParticleSystem::~ParticleSystem()
     {
         vkDestroyPipelineLayout(m_pgsDevice.device(), m_graphicsPipelineLayout, nullptr);
-        //vkDestroyPipelineLayout(m_Device.device(), m_computePipelineLayout, nullptr);
+        vkDestroyPipelineLayout(m_pgsDevice.device(), m_computePipelineLayout, nullptr);
     }
 
     void ParticleSystem::createGraphicsPipelineLayout()
@@ -40,7 +41,8 @@ namespace pgs
         }
     }
 
-    void ParticleSystem::createGraphicsPipeline(VkRenderPass renderPass) {
+    void ParticleSystem::createGraphicsPipeline(VkRenderPass renderPass) 
+    {
         assert(m_graphicsPipelineLayout != nullptr && "Cannot create graphics pipeline before graphics pipeline layout");
 
         PipelineConfigInfo pipelineConfig{};
@@ -68,7 +70,8 @@ namespace pgs
         }
     }
 
-    void ParticleSystem::createComputePipeline() {
+    void ParticleSystem::createComputePipeline() 
+    {
         assert(m_computePipelineLayout != nullptr && "Cannot create compute pipeline before compute pipeline layout");
 
         m_computePipeline = std::make_unique<PgsComputePipeline>(
@@ -77,24 +80,28 @@ namespace pgs
             m_computePipelineLayout);
     }
 
-    void ParticleSystem::renderParticles(FrameInfo& frameInfo) {
-
+    void ParticleSystem::computeParticles(FrameInfo& frameInfo) 
+    {
         // bind compute pipeline
-        //m_computePipeline->bind(frameInfo.commandBuffer);
+        m_computePipeline->bind(frameInfo.commandBuffer);
 
-        /*vkCmdBindDescriptorSets(
+        // bind descriptor sets
+        vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            m_pipelineLayout,
+            VK_PIPELINE_BIND_POINT_COMPUTE,
+            m_computePipelineLayout,
             0,
             1,
             &frameInfo.globalDescriptorSet,
             0,
-            nullptr);*/
+            nullptr);
 
         // dispatch compute job
-        //vkCmdDispatch(frameInfo.commandBuffer, );
+        m_computePipeline->compute(frameInfo.commandBuffer);
+    }
 
+    void ParticleSystem::renderParticles(FrameInfo& frameInfo) 
+    {
         // dispatch graphics jobs
         m_graphicsPipeline->bind(frameInfo.commandBuffer);
         frameInfo.model->bind(frameInfo.commandBuffer);

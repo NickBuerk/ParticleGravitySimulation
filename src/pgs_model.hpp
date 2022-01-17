@@ -40,6 +40,10 @@ class PgsModel
 	PgsModel &operator=(const PgsModel &) = delete;
 
 	static std::unique_ptr<PgsModel> createModel(PgsDevice &device);
+	std::unique_ptr<PgsBuffer> &getVertexBuffer()
+	{
+		return vertexBuffer;
+	}
 
 	void bind(VkCommandBuffer commandBuffer);
 	void draw(VkCommandBuffer commandBuffer);

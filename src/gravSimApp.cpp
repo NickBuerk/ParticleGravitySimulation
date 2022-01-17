@@ -20,8 +20,8 @@ namespace pgs
 
 struct GlobalUbo
 {
-	glm::mat4 projectionView{1.f};
-	glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+	alignas(16) float frameTime;
+	uint32_t particleCount;
 };
 
 GravSimApp::GravSimApp()
@@ -29,6 +29,7 @@ GravSimApp::GravSimApp()
 	globalPool =
 		PgsDescriptorPool::Builder(pgsDevice)
 			.setMaxSets(PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.build();
 }
@@ -52,23 +53,27 @@ void GravSimApp::run()
 
 	auto globalSetLayout =
 		PgsDescriptorSetLayout::Builder(pgsDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.build();
-
-	std::vector<VkDescriptorSet> globalDescriptorSets(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < globalDescriptorSets.size(); i++)
-	{
-		auto bufferInfo = uboBuffers[i]->descriptorInfo();
-		PgsDescriptorWriter(*globalSetLayout, *globalPool)
-			.writeBuffer(0, &bufferInfo)
-			.build(globalDescriptorSets[i]);
-	}
 
 	ParticleSystem particleSystem{pgsDevice,
 								  pgsRenderer.getSwapChainRenderPass(),
 								  globalSetLayout->getDescriptorSetLayout()};
 
 	std::shared_ptr<PgsModel> pgsModel = PgsModel::createModel(pgsDevice);
+
+	std::vector<VkDescriptorSet> globalDescriptorSets(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < globalDescriptorSets.size(); i++)
+	{
+		auto bufferInfo = uboBuffers[i]->descriptorInfo();
+		auto storageInfo = pgsModel->getVertexBuffer()->descriptorInfo();
+		auto result = PgsDescriptorWriter(*globalSetLayout, *globalPool)
+						  .writeBuffer(0, &storageInfo)
+						  .writeBuffer(1, &bufferInfo)
+						  .build(globalDescriptorSets[i]);
+		assert(result && "Failed to build descriptor writer!");
+	}
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	while (!pgsWindow.shouldClose())
@@ -91,12 +96,14 @@ void GravSimApp::run()
 								globalDescriptorSets[frameIndex]};
 
 			// update
-			// GlobalUbo ubo{};
-			// ubo.projectionView = camera.getProjection() * camera.getView();
-			// uboBuffers[frameIndex]->writeToBuffer(&ubo);
-			// uboBuffers[frameIndex]->flush();
+			GlobalUbo ubo{};
+			ubo.frameTime = frameTime;
+			ubo.particleCount = PgsModel::PARTICLE_COUNT;
+			uboBuffers[frameIndex]->writeToBuffer(&ubo);
+			uboBuffers[frameIndex]->flush();
 
 			// render
+			particleSystem.computeParticles(frameInfo);
 			pgsRenderer.beginSwapChainRenderPass(commandBuffer);
 			particleSystem.renderParticles(frameInfo);
 			pgsRenderer.endSwapChainRenderPass(commandBuffer);

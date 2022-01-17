@@ -22,6 +22,7 @@ class ParticleSystem {
   ParticleSystem &operator=(const ParticleSystem &) = delete;
 
   void renderParticles(FrameInfo &frameInfo);
+  void computeParticles(FrameInfo &frameInfo);
 
  private:
   void createGraphicsPipelineLayout();
