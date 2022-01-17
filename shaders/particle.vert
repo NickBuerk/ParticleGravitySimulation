@@ -2,8 +2,9 @@
 
 layout(location = 0) in vec2 position;
 layout(location = 1) in vec2 velocity;
+layout(location = 2) in vec4 color;
 
-layout(location = 0) out vec3 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 out gl_PerVertex
 {
@@ -12,7 +13,7 @@ out gl_PerVertex
 };
 
 void main() {
-  gl_PointSize = 1.0;
-  fragColor = vec3(1.0, 1.0, 1.0);
+  gl_PointSize = 0.1;
+  fragColor = color;
   gl_Position = vec4(position.xy, 0.0, 1.0);
 }

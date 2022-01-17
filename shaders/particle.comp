@@ -4,6 +4,7 @@ struct Particle
 {
     vec2 pos;
     vec2 vel;
+    vec4 color;
 };
 
 layout(std140, binding = 0) buffer Particles
@@ -17,7 +18,8 @@ layout (binding = 1) uniform UBO
 	int particleCount;
 } ubo;
 
-const float GRAV_CONSTANT = 0.0000035;
+const float GRAV_CONSTANT = 0.000001;
+const float damp = 0.0005;
 
 // Local size of compute shader - number of invocations that will take place inside a work group
 layout(local_size_x = 256) in;
@@ -26,7 +28,6 @@ vec2 computeGravity(vec2 pos)
 {
     // TODO: compute gravity
     vec2 forceSum = vec2(0.0, 0.0);
-    const float damp = 0.001;
     for (uint i = 0; i < ubo.particleCount; i++)
     {
         vec2 delta = particles[i].pos - pos;
@@ -50,14 +51,19 @@ void main()
     vec2 acceleration = computeGravity(vPos);
 
     // update this particle's velocity
-    vVel += (acceleration * ubo.frameTime);
+    vVel += (acceleration * ubo.frameTime) * 0.1;
 
     // update this particles position
-    vPos += (vVel * ubo.frameTime);
+    vPos += (vVel * ubo.frameTime) * 0.1;
 
     // write back
     particles[index].pos.xy = vPos;
     particles[index].vel.xy = vVel;
 
     // TODO: update color
+    float invAcc = 1.0/sqrt(dot(acceleration, acceleration));
+    vec3 col1 = vec3(88.0/255.0, 5.0/255.0, 255.0/255.0); // light blue
+    vec3 col2 = vec3(1.0, 1.0, 1.0); // white
+    vec3 color = (col1 - col2) * invAcc + col2; // interpolate based on accel value
+    particles[index].color = vec4(color, 1.0);
 }

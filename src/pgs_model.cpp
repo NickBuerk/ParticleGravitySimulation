@@ -19,13 +19,12 @@ PgsModel::~PgsModel()
 {
 }
 
-std::unique_ptr<PgsModel> PgsModel::createModel(PgsDevice &device)
+std::vector<pgs::PgsModel::Particle> particleDist1()
 {
 	std::default_random_engine rndEngine((unsigned)time(nullptr));
 	std::uniform_real_distribution<float> rndDistribution(-1.0f, 1.0f);
-	std::uniform_real_distribution<float> velDistribution(-0.1f, 0.1f);
 
-	std::vector<Particle> particles(PARTICLE_COUNT);
+	std::vector<pgs::PgsModel::Particle> particles(pgs::PgsModel::PARTICLE_COUNT);
 	for (auto &particle : particles)
 	{
 		particle.position = glm::vec2(rndDistribution(rndEngine), rndDistribution(rndEngine));
@@ -34,6 +33,54 @@ std::unique_ptr<PgsModel> PgsModel::createModel(PgsDevice &device)
 			glm::vec2(-particle.position.y, particle.position.x);
 		particle.velocity = distanceToCenter * directionPerpendicularToCenterLine;
 	}
+
+	return particles;
+}
+
+std::vector<pgs::PgsModel::Particle> particleDist2()
+{
+	std::vector<pgs::PgsModel::Particle> particles(pgs::PgsModel::PARTICLE_COUNT);
+	glm::vec2 center1(-0.3f, -0.3f);
+	glm::vec2 center2(0.3f, 0.3f);
+	float radius1 = 0.2f;
+	float radius2 = 0.2f;
+	const float velocityDamping = 0.5f;
+
+	std::default_random_engine rndEngine((unsigned)time(nullptr));
+	std::uniform_real_distribution<float> rndDist1(center1.x - radius1, center1.y + radius1);
+	std::uniform_real_distribution<float> rndDist2(center2.x - radius2, center2.y + radius2);
+
+	// First half of particles in dist1, second half in dist2
+	for (size_t i = 0; i < particles.size() / 2; i++)
+	{
+		pgs::PgsModel::Particle &particle1 = particles[i];
+		pgs::PgsModel::Particle &particle2 = particles[2 * i];
+
+		// Particle 1
+		particle1.position = glm::vec2(rndDist1(rndEngine), rndDist1(rndEngine));
+		float distanceToCenter1 =
+			glm::dot(center1 - particle1.position, center1 - particle1.position);
+		glm::vec2 directionPerpendicularToCenterLine1 =
+			glm::vec2(-particle1.position.y, particle1.position.x);
+		particle1.velocity =
+			distanceToCenter1 * directionPerpendicularToCenterLine1 * velocityDamping;
+
+		// Particle 2
+		particle2.position = glm::vec2(rndDist2(rndEngine), rndDist2(rndEngine));
+		float distanceToCenter2 =
+			glm::dot(center2 - particle2.position, center2 - particle2.position);
+		glm::vec2 directionPerpendicularToCenterLine2 =
+			glm::vec2(-particle2.position.y, particle2.position.x);
+		particle2.velocity =
+			distanceToCenter2 * directionPerpendicularToCenterLine2 * velocityDamping;
+	}
+
+	return particles;
+}
+
+std::unique_ptr<PgsModel> PgsModel::createModel(PgsDevice &device)
+{
+	std::vector<Particle> particles = particleDist2();
 
 	return std::make_unique<PgsModel>(device, particles);
 }
@@ -93,6 +140,8 @@ std::vector<VkVertexInputAttributeDescription> PgsModel::Particle::getAttributeD
 
 	attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Particle, position)});
 	attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Particle, velocity)});
+	attributeDescriptions.push_back(
+		{2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Particle, color)});
 
 	return attributeDescriptions;
 }

@@ -21,6 +21,7 @@ class PgsModel
 	{
 		glm::vec2 position{};
 		glm::vec2 velocity{};
+		glm::vec4 color{};
 
 		static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();

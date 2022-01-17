@@ -31,11 +31,11 @@ struct QueueFamilyIndices
 class PgsDevice
 {
   public:
-#ifdef NDEBUG
+	//#ifdef  NDEBUG
 	const bool enableValidationLayers = false;
-#else
-	const bool enableValidationLayers = true;
-#endif
+	// #else
+	// 	const bool enableValidationLayers = true;
+	// #endif
 
 	PgsDevice(PgsWindow &window);
 	~PgsDevice();

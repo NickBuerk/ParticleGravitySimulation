@@ -14,8 +14,8 @@ namespace pgs
 class GravSimApp
 {
   public:
-	static constexpr int WIDTH = 1280;
-	static constexpr int HEIGHT = 720;
+	static constexpr int WIDTH = 2560;
+	static constexpr int HEIGHT = 1440;
 
 	GravSimApp();
 	~GravSimApp();
