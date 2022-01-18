@@ -22,7 +22,7 @@ PgsModel::~PgsModel()
 std::vector<pgs::PgsModel::Particle> particleDist1()
 {
 	std::default_random_engine rndEngine((unsigned)time(nullptr));
-	std::uniform_real_distribution<float> rndDistribution(-1.0f, 1.0f);
+	std::uniform_real_distribution<float> rndDistribution(-0.6f, 0.6f);
 
 	std::vector<pgs::PgsModel::Particle> particles(pgs::PgsModel::PARTICLE_COUNT);
 	for (auto &particle : particles)
@@ -80,7 +80,7 @@ std::vector<pgs::PgsModel::Particle> particleDist2()
 
 std::unique_ptr<PgsModel> PgsModel::createModel(PgsDevice &device)
 {
-	std::vector<Particle> particles = particleDist2();
+	std::vector<Particle> particles = particleDist1();
 
 	return std::make_unique<PgsModel>(device, particles);
 }
