@@ -18,23 +18,23 @@ class PgsWindow
 
 	bool shouldClose()
 	{
-		return glfwWindowShouldClose(window);
+		return glfwWindowShouldClose(m_window);
 	}
 	VkExtent2D getExtent()
 	{
-		return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+		return {static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height)};
 	}
 	bool wasWindowResized()
 	{
-		return framebufferResized;
+		return m_framebufferResized;
 	}
 	void resetWindowResizedFlag()
 	{
-		framebufferResized = false;
+		m_framebufferResized = false;
 	}
 	GLFWwindow *getGLFWwindow() const
 	{
-		return window;
+		return m_window;
 	}
 
 	void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
@@ -43,11 +43,11 @@ class PgsWindow
 	static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
 	void initWindow();
 
-	int width;
-	int height;
-	bool framebufferResized = false;
+	int m_width;
+	int m_height;
+	bool m_framebufferResized = false;
 
-	std::string windowName;
-	GLFWwindow *window;
+	std::string m_windowName;
+	GLFWwindow *m_window;
 };
 } // namespace pgs

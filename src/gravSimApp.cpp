@@ -28,7 +28,7 @@ struct GlobalUbo
 GravSimApp::GravSimApp()
 {
 	globalPool =
-		PgsDescriptorPool::Builder(pgsDevice)
+		PgsDescriptorPool::Builder(m_pgsDevice)
 			.setMaxSets(PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PgsSwapChain::MAX_FRAMES_IN_FLIGHT)
@@ -44,7 +44,7 @@ void GravSimApp::run()
 	std::vector<std::unique_ptr<PgsBuffer>> uboBuffers(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
 	for (int i = 0; i < uboBuffers.size(); i++)
 	{
-		uboBuffers[i] = std::make_unique<PgsBuffer>(pgsDevice,
+		uboBuffers[i] = std::make_unique<PgsBuffer>(m_pgsDevice,
 													sizeof(GlobalUbo),
 													1,
 													VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -53,16 +53,16 @@ void GravSimApp::run()
 	}
 
 	auto globalSetLayout =
-		PgsDescriptorSetLayout::Builder(pgsDevice)
+		PgsDescriptorSetLayout::Builder(m_pgsDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 			.build();
 
-	ParticleSystem particleSystem{pgsDevice,
-								  pgsRenderer.getSwapChainRenderPass(),
+	ParticleSystem particleSystem{m_pgsDevice,
+								  m_pgsRenderer.getSwapChainRenderPass(),
 								  globalSetLayout->getDescriptorSetLayout()};
 
-	std::shared_ptr<PgsModel> pgsModel = PgsModel::createModel(pgsDevice);
+	std::shared_ptr<PgsModel> pgsModel = PgsModel::createModel(m_pgsDevice);
 
 	std::vector<VkDescriptorSet> globalDescriptorSets(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
 	for (int i = 0; i < globalDescriptorSets.size(); i++)
@@ -77,7 +77,7 @@ void GravSimApp::run()
 	}
 
 	auto currentTime = std::chrono::high_resolution_clock::now();
-	while (!pgsWindow.shouldClose())
+	while (!m_pgsWindow.shouldClose())
 	{
 		glfwPollEvents();
 
@@ -88,9 +88,9 @@ void GravSimApp::run()
 		currentTime = newTime;
 		// std::cout << "Frame time: " << frameTime << "\n";
 
-		if (auto commandBuffer = pgsRenderer.beginFrame())
+		if (auto commandBuffer = m_pgsRenderer.beginFrame())
 		{
-			int frameIndex = pgsRenderer.getFrameIndex();
+			int frameIndex = m_pgsRenderer.getFrameIndex();
 			FrameInfo frameInfo{frameIndex,
 								frameTime,
 								commandBuffer,
@@ -106,14 +106,14 @@ void GravSimApp::run()
 
 			// render
 			particleSystem.computeParticles(frameInfo);
-			pgsRenderer.beginSwapChainRenderPass(commandBuffer);
+			m_pgsRenderer.beginSwapChainRenderPass(commandBuffer);
 			particleSystem.renderParticles(frameInfo);
-			pgsRenderer.endSwapChainRenderPass(commandBuffer);
-			pgsRenderer.endFrame();
+			m_pgsRenderer.endSwapChainRenderPass(commandBuffer);
+			m_pgsRenderer.endFrame();
 		}
 	}
 
-	vkDeviceWaitIdle(pgsDevice.device());
+	vkDeviceWaitIdle(m_pgsDevice.device());
 }
 
 } // namespace pgs

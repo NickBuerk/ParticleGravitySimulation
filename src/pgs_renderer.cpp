@@ -10,7 +10,7 @@ namespace pgs
 {
 
 PgsRenderer::PgsRenderer(PgsWindow &window, PgsDevice &device)
-	: m_pgsWindow{window}, pgsDevice{device}
+	: m_pgsWindow{window}, m_pgsDevice{device}
 {
 	recreateSwapChain();
 	createCommandBuffers();
@@ -29,18 +29,18 @@ void PgsRenderer::recreateSwapChain()
 		extent = m_pgsWindow.getExtent();
 		glfwWaitEvents();
 	}
-	vkDeviceWaitIdle(pgsDevice.device());
+	vkDeviceWaitIdle(m_pgsDevice.device());
 
-	if (pgsSwapChain == nullptr)
+	if (m_pgsSwapChain == nullptr)
 	{
-		pgsSwapChain = std::make_unique<PgsSwapChain>(pgsDevice, extent);
+		m_pgsSwapChain = std::make_unique<PgsSwapChain>(m_pgsDevice, extent);
 	}
 	else
 	{
-		std::shared_ptr<PgsSwapChain> oldSwapChain = std::move(pgsSwapChain);
-		pgsSwapChain = std::make_unique<PgsSwapChain>(pgsDevice, extent, oldSwapChain);
+		std::shared_ptr<PgsSwapChain> oldSwapChain = std::move(m_pgsSwapChain);
+		m_pgsSwapChain = std::make_unique<PgsSwapChain>(m_pgsDevice, extent, oldSwapChain);
 
-		if (!oldSwapChain->compareSwapFormats(*pgsSwapChain.get()))
+		if (!oldSwapChain->compareSwapFormats(*m_pgsSwapChain.get()))
 		{
 			throw std::runtime_error("Swap chain image(or depth) format has changed!");
 		}
@@ -49,15 +49,15 @@ void PgsRenderer::recreateSwapChain()
 
 void PgsRenderer::createCommandBuffers()
 {
-	commandBuffers.resize(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
+	m_commandBuffers.resize(PgsSwapChain::MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = pgsDevice.getCommandPool();
-	allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+	allocInfo.commandPool = m_pgsDevice.getCommandPool();
+	allocInfo.commandBufferCount = static_cast<uint32_t>(m_commandBuffers.size());
 
-	if (vkAllocateCommandBuffers(pgsDevice.device(), &allocInfo, commandBuffers.data()) !=
+	if (vkAllocateCommandBuffers(m_pgsDevice.device(), &allocInfo, m_commandBuffers.data()) !=
 		VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate command buffers!");
@@ -66,18 +66,18 @@ void PgsRenderer::createCommandBuffers()
 
 void PgsRenderer::freeCommandBuffers()
 {
-	vkFreeCommandBuffers(pgsDevice.device(),
-						 pgsDevice.getCommandPool(),
-						 static_cast<uint32_t>(commandBuffers.size()),
-						 commandBuffers.data());
-	commandBuffers.clear();
+	vkFreeCommandBuffers(m_pgsDevice.device(),
+						 m_pgsDevice.getCommandPool(),
+						 static_cast<uint32_t>(m_commandBuffers.size()),
+						 m_commandBuffers.data());
+	m_commandBuffers.clear();
 }
 
 VkCommandBuffer PgsRenderer::beginFrame()
 {
-	assert(!isFrameStarted && "Can't call beginFrame while already in progress");
+	assert(!m_isFrameStarted && "Can't call beginFrame while already in progress");
 
-	auto result = pgsSwapChain->acquireNextImage(&currentImageIndex);
+	auto result = m_pgsSwapChain->acquireNextImage(&m_currentImageIndex);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
 		recreateSwapChain();
@@ -89,7 +89,7 @@ VkCommandBuffer PgsRenderer::beginFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	isFrameStarted = true;
+	m_isFrameStarted = true;
 
 	auto commandBuffer = getCurrentCommandBuffer();
 	VkCommandBufferBeginInfo beginInfo{};
@@ -104,14 +104,14 @@ VkCommandBuffer PgsRenderer::beginFrame()
 
 void PgsRenderer::endFrame()
 {
-	assert(isFrameStarted && "Can't call endFrame while frame is not in progress");
+	assert(m_isFrameStarted && "Can't call endFrame while frame is not in progress");
 	auto commandBuffer = getCurrentCommandBuffer();
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to record command buffer!");
 	}
 
-	auto result = pgsSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+	auto result = m_pgsSwapChain->submitCommandBuffers(&commandBuffer, &m_currentImageIndex);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
 		m_pgsWindow.wasWindowResized())
 	{
@@ -123,23 +123,23 @@ void PgsRenderer::endFrame()
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 
-	isFrameStarted = false;
-	currentFrameIndex = (currentFrameIndex + 1) % PgsSwapChain::MAX_FRAMES_IN_FLIGHT;
+	m_isFrameStarted = false;
+	m_currentFrameIndex = (m_currentFrameIndex + 1) % PgsSwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
 void PgsRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
-	assert(isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
+	assert(m_isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
 	assert(commandBuffer == getCurrentCommandBuffer() &&
 		   "Can't begin render pass on command buffer from a different frame");
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = pgsSwapChain->getRenderPass();
-	renderPassInfo.framebuffer = pgsSwapChain->getFrameBuffer(currentImageIndex);
+	renderPassInfo.renderPass = m_pgsSwapChain->getRenderPass();
+	renderPassInfo.framebuffer = m_pgsSwapChain->getFrameBuffer(m_currentImageIndex);
 
 	renderPassInfo.renderArea.offset = {0, 0};
-	renderPassInfo.renderArea.extent = pgsSwapChain->getSwapChainExtent();
+	renderPassInfo.renderArea.extent = m_pgsSwapChain->getSwapChainExtent();
 
 	std::array<VkClearValue, 2> clearValues{};
 	clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -152,18 +152,18 @@ void PgsRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(pgsSwapChain->getSwapChainExtent().width);
-	viewport.height = static_cast<float>(pgsSwapChain->getSwapChainExtent().height);
+	viewport.width = static_cast<float>(m_pgsSwapChain->getSwapChainExtent().width);
+	viewport.height = static_cast<float>(m_pgsSwapChain->getSwapChainExtent().height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	VkRect2D scissor{{0, 0}, pgsSwapChain->getSwapChainExtent()};
+	VkRect2D scissor{{0, 0}, m_pgsSwapChain->getSwapChainExtent()};
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
 void PgsRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
-	assert(isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
+	assert(m_isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
 	assert(commandBuffer == getCurrentCommandBuffer() &&
 		   "Can't end render pass on command buffer from a different frame");
 	vkCmdEndRenderPass(commandBuffer);

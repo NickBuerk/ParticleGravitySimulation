@@ -51,9 +51,9 @@ class PgsGraphicsPipeline
 
 	void createShaderModule(const std::vector<char> &code, VkShaderModule *shaderModule);
 
-	PgsDevice &pgsDevice;
-	VkPipeline graphicsPipeline;
-	VkShaderModule vertShaderModule;
-	VkShaderModule fragShaderModule;
+	PgsDevice &m_pgsDevice;
+	VkPipeline m_graphicsPipeline;
+	VkShaderModule m_vertShaderModule;
+	VkShaderModule m_fragShaderModule;
 };
 } // namespace pgs

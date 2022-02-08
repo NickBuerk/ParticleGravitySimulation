@@ -22,27 +22,27 @@ class PgsRenderer
 
 	VkRenderPass getSwapChainRenderPass() const
 	{
-		return pgsSwapChain->getRenderPass();
+		return m_pgsSwapChain->getRenderPass();
 	}
 	float getAspectRatio() const
 	{
-		return pgsSwapChain->extentAspectRatio();
+		return m_pgsSwapChain->extentAspectRatio();
 	}
 	bool isFrameInProgress() const
 	{
-		return isFrameStarted;
+		return m_isFrameStarted;
 	}
 
 	VkCommandBuffer getCurrentCommandBuffer() const
 	{
-		assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
-		return commandBuffers[currentFrameIndex];
+		assert(m_isFrameStarted && "Cannot get command buffer when frame not in progress");
+		return m_commandBuffers[m_currentFrameIndex];
 	}
 
 	int getFrameIndex() const
 	{
-		assert(isFrameStarted && "Cannot get frame index when frame not in progress");
-		return currentFrameIndex;
+		assert(m_isFrameStarted && "Cannot get frame index when frame not in progress");
+		return m_currentFrameIndex;
 	}
 
 	VkCommandBuffer beginFrame();
@@ -56,12 +56,12 @@ class PgsRenderer
 	void recreateSwapChain();
 
 	PgsWindow &m_pgsWindow;
-	PgsDevice &pgsDevice;
-	std::unique_ptr<PgsSwapChain> pgsSwapChain;
-	std::vector<VkCommandBuffer> commandBuffers;
+	PgsDevice &m_pgsDevice;
+	std::unique_ptr<PgsSwapChain> m_pgsSwapChain;
+	std::vector<VkCommandBuffer> m_commandBuffers;
 
-	uint32_t currentImageIndex;
-	int currentFrameIndex{0};
-	bool isFrameStarted{false};
+	uint32_t m_currentImageIndex;
+	int m_currentFrameIndex{0};
+	bool m_isFrameStarted{false};
 };
 } // namespace pgs

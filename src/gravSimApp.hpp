@@ -28,9 +28,9 @@ class GravSimApp
   private:
 	void loadGameObjects();
 
-	PgsWindow pgsWindow{WIDTH, HEIGHT, "Particle Gravity Simulation"};
-	PgsDevice pgsDevice{pgsWindow};
-	PgsRenderer pgsRenderer{pgsWindow, pgsDevice};
+	PgsWindow m_pgsWindow{WIDTH, HEIGHT, "Particle Gravity Simulation"};
+	PgsDevice m_pgsDevice{m_pgsWindow};
+	PgsRenderer m_pgsRenderer{m_pgsWindow, m_pgsDevice};
 
 	// note: order of declarations matters
 	std::unique_ptr<PgsDescriptorPool> globalPool{};

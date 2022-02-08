@@ -6,14 +6,14 @@
 namespace pgs
 {
 
-PgsWindow::PgsWindow(int w, int h, std::string name) : width{w}, height{h}, windowName{name}
+PgsWindow::PgsWindow(int w, int h, std::string name) : m_width{w}, m_height{h}, m_windowName{name}
 {
 	initWindow();
 }
 
 PgsWindow::~PgsWindow()
 {
-	glfwDestroyWindow(window);
+	glfwDestroyWindow(m_window);
 	glfwTerminate();
 }
 
@@ -23,14 +23,14 @@ void PgsWindow::initWindow()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-	window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
-	glfwSetWindowUserPointer(window, this);
-	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+	m_window = glfwCreateWindow(m_width, m_height, m_windowName.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(m_window, this);
+	glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
 }
 
 void PgsWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
 {
-	if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS)
+	if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to craete window surface");
 	}
@@ -39,9 +39,9 @@ void PgsWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
 void PgsWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height)
 {
 	auto pgsWindow = reinterpret_cast<PgsWindow *>(glfwGetWindowUserPointer(window));
-	pgsWindow->framebufferResized = true;
-	pgsWindow->width = width;
-	pgsWindow->height = height;
+	pgsWindow->m_framebufferResized = true;
+	pgsWindow->m_width = width;
+	pgsWindow->m_height = height;
 }
 
 } // namespace pgs

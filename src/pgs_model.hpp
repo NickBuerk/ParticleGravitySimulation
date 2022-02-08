@@ -43,7 +43,7 @@ class PgsModel
 	static std::unique_ptr<PgsModel> createModel(PgsDevice &device);
 	std::unique_ptr<PgsBuffer> &getVertexBuffer()
 	{
-		return vertexBuffer;
+		return m_vertexBuffer;
 	}
 
 	void bind(VkCommandBuffer commandBuffer);
@@ -52,14 +52,10 @@ class PgsModel
   private:
 	void createVertexBuffers(const std::vector<Particle> &particles);
 
-	PgsDevice &pgsDevice;
+	PgsDevice &m_pgsDevice;
 
-	std::vector<Particle> vertices{};
-	std::unique_ptr<PgsBuffer> vertexBuffer;
-	uint32_t vertexCount;
-
-	bool hasIndexBuffer = false;
-	std::unique_ptr<PgsBuffer> indexBuffer;
-	uint32_t indexCount;
+	std::vector<Particle> m_vertices{};
+	std::unique_ptr<PgsBuffer> m_vertexBuffer;
+	uint32_t m_vertexCount;
 };
 } // namespace pgs
